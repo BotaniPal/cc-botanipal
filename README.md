@@ -2,7 +2,7 @@
 
 # 1.  Install Needed Tools and Dependencies
 
-### npm install --save-dev typescript @types/react @types/node
+###### npm install --save-dev typescript @types/react @types/node
 ### npx tsc --init
 ### npm install -D tailwindcss postcss autoprefixer
 ### npx tailwindcss init -p
