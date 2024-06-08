@@ -2,23 +2,24 @@
 
 # 1.  Install Needed Tools and Dependencies
 
-##### npm install --save-dev typescript @types/react @types/node
-##### npx tsc --init
-##### npm install -D tailwindcss postcss autoprefixer
-##### npx tailwindcss init -p
-##### npm install aos
-##### npm i --save-dev @types/aos
-##### npm install react-icons
-##### yarn add react-icons
-##### npm install @tailwindcss/forms
-##### yarn add @tailwindcss/forms
+```npm install --save-dev typescript @types/react @types/node``` <br />
+```npx tsc --init``` <br />
+```npm install -D tailwindcss postcss autoprefixer``` <br />
+```npx tailwindcss init -p``` <br />
+```npm install aos``` <br />
+```npm i --save-dev @types/aos``` <br />
+```npm install react-icons``` <br />
+```yarn add react-icons``` <br />
+```npm install @tailwindcss/forms``` <br />
+```yarn add @tailwindcss/forms``` <br />
+
 
 # 2.  Start your Website with the commands below
 
-npm run dev
-##### or
-yarn dev
-##### or
-pnpm dev
-```
+```npm run dev``` <br />
+or <br />
+```yarn dev``` <br />
+or <br />
+```pnpm dev``` <br />
+
 
