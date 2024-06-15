@@ -1,18 +1,17 @@
-const express = require('express');
-const { check } = require('express-validator');
-const profileController = require('../controllers/profileController');
-const authMiddleware = require('../middlewares/authMiddleware');
-
+const express = require("express");
 const router = express.Router();
+const authMiddleware = require("../middlewares/authMiddleware");
+const profileController = require("../controllers/profileController");
+const multer = require("multer");
 
-// Get Profile Route
-router.get('/', authMiddleware.verifyToken, profileController.getProfile);
+const upload = multer({ storage: multer.memoryStorage() });
 
-// Update Profile Route
-router.put('/', [
-  check('job', 'Job is required').notEmpty(),
-  check('bio', 'Bio is required').notEmpty(),
-  check('photoUrl', 'Photo URL is required').notEmpty(),
-], authMiddleware.verifyToken, profileController.updateProfile);
+router.get("/user", authMiddleware, profileController.getUserProfile);
+router.put(
+  "/user/update",
+  authMiddleware,
+  upload.single("profileImage"),
+  profileController.updateUserProfile
+);
 
 module.exports = router;

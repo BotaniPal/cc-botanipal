@@ -1,33 +1,11 @@
-const express = require('express');
-const { check } = require('express-validator');
-const authController = require('../controllers/authController');
-
+const express = require("express");
 const router = express.Router();
+const authController = require("../controllers/authController");
 
-// Register Route
-router.post('/register', [
-  check('email', 'Email is required').isEmail(),
-  check('password', 'Password is required').notEmpty(),
-  check('username', 'Username is required').notEmpty(),
-], authController.registerUser);
-
-// Login Route
-router.post('/login', [
-  check('username', 'Username is required').notEmpty(),
-  check('password', 'Password is required').notEmpty(),
-], authController.loginUser);
-
-// Forgot Password Route
-router.post('/forgot-password', [
-  check('email', 'Email is required').isEmail(),
-], authController.forgotPassword);
-
-// Reset Password Route
-router.post('/reset-password', [
-  check('email', 'Email is required').isEmail(),
-  check('otp', 'OTP is required').notEmpty(),
-  check('newPassword', 'New password is required').notEmpty(),
-  check('confirmNewPassword', 'Confirm new password is required').notEmpty(),
-], authController.resetPassword);
+router.post("/register-user", authController.registerUser);
+router.post("/register-expert", authController.registerExpert);
+router.post("/login", authController.login);
+router.post("/forgot-password", authController.forgotPassword);
+router.post("/reset-password", authController.resetPassword);
 
 module.exports = router;

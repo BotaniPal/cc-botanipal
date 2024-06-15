@@ -1,83 +1,104 @@
-const admin = require('firebase-admin');
-const { validationResult } = require('express-validator');
-const midtransClient = require('midtrans-client');
+const transactionService = require('../services/transactionService');
 
-// Midtrans configuration
-const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
-const MIDTRANS_CLIENT_KEY = process.env.MIDTRANS_CLIENT_KEY;
-
-// Initialize Midtrans Client
-const snap = new midtransClient.Snap({
-  isProduction: false,
-  serverKey: MIDTRANS_SERVER_KEY,
-  clientKey: MIDTRANS_CLIENT_KEY,
-});
-
-// Create Transaction
-exports.createTransaction = async (req, res) => {
-  // Validate request input
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const { expertId, sessionDuration } = req.body;
-  const userId = req.user.id;
-
+const createTransaction = async (req, res) => {
   try {
-    const expertRef = admin.firestore().collection('users').doc(expertId);
-    const expertDoc = await expertRef.get();
+    const { uid_expert, uid_user, paymentNominal, paymentMethod, transactionProgress, timestamp } = req.body;
 
-    if (!expertDoc.exists || expertDoc.data().role !== 'expert') {
-      return res.status(404).json({ message: 'Expert not found' });
+    if (
+      typeof uid_expert !== 'string' ||
+      typeof uid_user !== 'string' ||
+      typeof paymentNominal !== 'number' ||
+      typeof paymentMethod !== 'string' ||
+      typeof transactionProgress !== 'string' ||
+      typeof timestamp !== 'string'
+    ) {
+      return res.status(400).json({ error: 'Invalid data format' });
     }
 
-    const expert = expertDoc.data();
-    const transactionDetails = {
-      order_id: `order-${Date.now()}`,
-      gross_amount: expert.pricePerSession * sessionDuration * 1.1, // 10% service fee
+    const transactionData = {
+      uid_expert,
+      uid_user,
+      paymentNominal,
+      paymentMethod,
+      transactionProgress,
+      timestamp
     };
 
-    const customerDetails = {
-      first_name: req.user.username,
-      email: req.user.email,
-    };
-
-    const parameter = {
-      transaction_details: transactionDetails,
-      customer_details: customerDetails,
-    };
-
-    snap.createTransaction(parameter)
-      .then((transaction) => {
-        const transactionToken = transaction.token;
-        res.json({ token: transactionToken });
-      })
-      .catch((error) => {
-        res.status(500).json({ message: 'Error creating transaction', error: error.message });
-      });
+    const newTransaction = await transactionService.createTransaction(transactionData);
+    res.json(newTransaction);
   } catch (error) {
-    res.status(500).json({ message: 'Error creating transaction', error: error.message });
+    console.error('Error creating transaction:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-// Transaction History
-exports.transactionHistory = async (req, res) => {
-  const userId = req.user.id;
-
+const getTransactionsByUser = async (req, res) => {
   try {
-    const transactionsRef = admin.firestore().collection('transactions').where('userId', '==', userId);
-    const transactionsSnapshot = await transactionsRef.get();
-
-    if (transactionsSnapshot.empty) {
-      return res.status(404).json({ message: 'No transactions found' });
-    }
-
-    const transactions = [];
-    transactionsSnapshot.forEach(doc => transactions.push(doc.data()));
-
+    const userId = req.user.id;
+    const transactions = await transactionService.getTransactionsByUser(userId);
     res.json(transactions);
   } catch (error) {
-    res.status(500).json({ message: 'Error retrieving transactions', error: error.message });
+    console.error('Error getting transactions:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+const getTransactionById = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const transactionId = req.params.transactionid;
+    const transaction = await transactionService.getTransactionById(transactionId, userId);
+    res.json(transaction);
+  } catch (error) {
+    if (error.message === 'Transaction not found') {
+      return res.status(404).json({ error: error.message });
+    } else if (error.message === 'Unauthorized access to transaction') {
+      return res.status(403).json({ error: error.message });
+    } else {
+      console.error('Error getting transaction:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+};
+
+const updateTransactionProgress = async (req, res) => {
+  try {
+    const transactionId = req.params.transactionId;
+    const newProgress = req.body.transactionProgress;
+    const userId = req.user.id;
+
+    if (!newProgress) {
+      return res.status(400).json({ error: 'Missing transactionProgress field' });
+    }
+
+    const validStatuses = ['waiting for payment', 'paid', 'cancelled', 'on process'];
+    if (!validStatuses.includes(newProgress)) {
+      return res.status(400).json({ error: 'Invalid transaction progress value' });
+    }
+
+    const allowedFields = ['transactionProgress'];
+    const invalidFields = Object.keys(req.body).filter(field => !allowedFields.includes(field));
+    if (invalidFields.length > 0) {
+      return res.status(400).json({ error: `Invalid fields: ${invalidFields.join(', ')}` });
+    }
+
+    const updatedTransaction = await transactionService.updateTransaction(transactionId, newProgress, userId); 
+    res.json(updatedTransaction);
+  } catch (error) {
+    if (error.message === 'Transaction not found') {
+      return res.status(404).json({ error: error.message });
+    } else if (error.message === 'Unauthorized to update transaction') {
+      return res.status(403).json({ error: error.message });
+    } else {
+      console.error('Error updating transaction:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+};
+
+module.exports = {
+  createTransaction,
+  getTransactionsByUser,
+  getTransactionById,
+  updateTransactionProgress,
+}; 

@@ -1,21 +1,26 @@
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 
-// JWT secret key
-const JWT_SECRET = process.env.JWT_SECRET;
-
-// Verify JWT Token Middleware
-exports.verifyToken = (req, res, next) => {
-  const token = req.headers['x-access-token'];
-
+module.exports = (req, res, next) => {
+  const token = req.headers["authorization"];
   if (!token) {
-    return res.status(403).send({ message: 'No token provided!' });
+    return res.status(403).json({ message: "No token provided" });
   }
 
-  jwt.verify(token, JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(500).send({ message: 'Failed to authenticate token.' });
+  try {
+    const tokenParts = token.split(" ");
+    if (tokenParts.length !== 2 || tokenParts[0] !== "Bearer") {
+      return res
+        .status(403)
+        .json({ message: "Token format is Bearer <token>" });
     }
-    req.user = decoded;
+
+    const decoded = jwt.verify(tokenParts[1], process.env.JWT_SECRET);
+    req.user = { id: decoded.id };
+    req.tokenIssuedAt = decoded.iat * 1000;
     next();
-  });
+  } catch (error) {
+    res
+      .status(401)
+      .json({ message: "Failed to authenticate token", error: error.message });
+  }
 };

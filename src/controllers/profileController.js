@@ -1,46 +1,46 @@
-const admin = require('firebase-admin');
-const { validationResult } = require('express-validator');
+const profileService = require("../services/profileService");
 
-// Update Profile
-exports.updateProfile = async (req, res) => {
-  // Validate request input
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const userId = req.user.id;
-  const { job, bio, photoUrl } = req.body;
-
+exports.getUserProfile = async (req, res) => {
   try {
-    const userRef = admin.firestore().collection('users').doc(userId);
-    await userRef.update({
-      job,
-      bio,
-      photoUrl,
-      updatedAt: new Date().toISOString()
-    });
-
-    res.json({ message: 'Profile updated successfully' });
+    const profile = await profileService.getUserProfile(req.user.id);
+    res.status(200).json(profile);
   } catch (error) {
-    res.status(500).json({ message: 'Error updating profile', error: error.message });
+    if (error.message === "User not found") {
+      return res.status(404).json({ error: error.message });
+    } else if (error.message === "Permission denied to access user data") {
+      return res.status(403).json({ error: error.message });
+    } else {
+      console.error("Error in getUserProfile:", error);
+      return res.status(500).json({ error: "Failed to get user profile" });
+    }
   }
 };
 
-// Get Profile
-exports.getProfile = async (req, res) => {
-  const userId = req.user.id;
-
+exports.updateUserProfile = async (req, res) => {
   try {
-    const userRef = admin.firestore().collection('users').doc(userId);
-    const userDoc = await userRef.get();
+    const userId = req.user.id;
+    const profileData = req.body;
+    const profileImage = req.file;
 
-    if (!userDoc.exists) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    res.json(userDoc.data());
+    const profile = await profileService.updateUserProfile(
+      userId,
+      profileData,
+      profileImage
+    );
+    res.status(200).json(profile);
   } catch (error) {
-    res.status(500).json({ message: 'Error retrieving profile', error: error.message });
+    if (error.message === "User not found") {
+      return res.status(404).json({ error: error.message });
+    } else if (
+      error.message === "Invalid fields for user role" ||
+      error.message === "Invalid fields for expert role"
+    ) {
+      return res.status(400).json({ error: error.message });
+    } else if (error.message === "Username is already taken") {
+      return res.status(409).json({ error: error.message });
+    } else {
+      console.error("Error updating profile:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
   }
 };
