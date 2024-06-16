@@ -24,6 +24,7 @@ You need to prepare the environment first:
     FIREBASE_STORAGE_BUCKET=
     PLANT_MODEL_URL=
     DISEASE_MODEL_URL=
+    FORECAST_MODEL_URL=
 
 You can ask the repository owner for model credentials*
 
