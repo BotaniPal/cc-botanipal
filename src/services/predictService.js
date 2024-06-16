@@ -110,36 +110,44 @@ async function deleteExpiredPredictions() {
   const oneHourAgo = Date.now() - 60 * 60 * 1000;
 
   try {
-    const predictionsRef = db.collection("predictions");
+    const predictionsRef = db.collection('predictions');
     const expiredPredictions = await predictionsRef
-      .where(
-        "timestamp",
-        "<",
-        new admin.firestore.Timestamp(oneHourAgo / 1000, 0)
-      )
+      .where('timestamp', '<', admin.firestore.Timestamp.fromMillis(oneHourAgo))
       .get();
+
+    if (expiredPredictions.empty) {
+      console.log('No expired predictions found.');
+      return;
+    }
+
+    console.log(`Found ${expiredPredictions.size} expired predictions.`);
 
     const promises = expiredPredictions.docs.map(async (doc) => {
       const predictionData = doc.data();
       const imageUrl = predictionData.imageUrl;
 
       if (imageUrl) {
-        const filePath = imageUrl.replace(
-          `https://storage.googleapis.com/${bucket.name}/`,
-          ""
-        );
-        await bucket.file(filePath).delete();
-        console.log("Deleted expired image:", imageUrl);
+        try {
+          const filePath = imageUrl.replace(`https://storage.googleapis.com/${bucket.name}/`, '');
+          await bucket.file(filePath).delete();
+          console.log('Deleted expired image:', imageUrl);
+        } catch (deleteError) {
+          console.error('Error deleting image:', imageUrl, deleteError);
+        }
       }
-
-      await doc.ref.delete();
-      console.log("Deleted expired prediction:", doc.id);
+      try {
+        await doc.ref.delete();
+        console.log('Deleted expired prediction:', doc.id);
+      } catch (deleteError) {
+        console.error('Error deleting prediction:', doc.id, deleteError);
+      }
     });
 
     await Promise.all(promises);
-    console.log("Expired predictions cleanup completed");
+    console.log('Expired predictions cleanup completed.');
+
   } catch (error) {
-    console.error("Error deleting expired predictions:", error);
+    console.error('Error deleting expired predictions:', error);
   }
 }
 

@@ -35,6 +35,7 @@ const bookmarkRoutes = require("./src/routes/bookmarkRoutes");
 const predictRoutes = require("./src/routes/predictRoutes");
 const predictService = require('./src/services/predictService');
 const forecastRoutes = require('./src/routes/forecastRoutes');
+
 cron.schedule('0 * * * *', () => {
   predictService.deleteExpiredPredictions();
 });
