@@ -1,46 +1,59 @@
 const authService = require("../services/authService");
+const { successResponse, errorResponse } = require("../utils/responseUtils");
 
 exports.registerUser = async (req, res) => {
   try {
     const result = await authService.registerUser(req.body);
-    res.status(201).send(result);
+    successResponse(res, 201, "User registered successfully", {
+      uid: result.uid,
+    });
   } catch (error) {
-    res.status(400).send({ error: error.message });
+    console.error("Error in registerUser:", error);
+    errorResponse(res, 400, error.message || "User registration failed");
   }
 };
 
 exports.registerExpert = async (req, res) => {
   try {
     const result = await authService.registerExpert(req.body);
-    res.status(201).send(result);
+    successResponse(res, 201, "Expert registered successfully", {
+      uid: result.uid,
+    });
   } catch (error) {
-    res.status(400).send({ error: error.message });
+    console.error("Error in registerExpert:", error);
+    errorResponse(res, 400, error.message || "Expert registration failed");
   }
 };
 
 exports.login = async (req, res) => {
   try {
     const result = await authService.login(req.body);
-    res.status(200).send(result);
+    successResponse(res, 200, "Login successful", {
+      token: result.token,
+      user: result.user,
+    });
   } catch (error) {
-    res.status(400).send({ error: error.message });
+    console.error("Error in login:", error);
+    errorResponse(res, 401, error.message || "Invalid credentials");
   }
 };
 
 exports.forgotPassword = async (req, res) => {
   try {
     const result = await authService.forgotPassword(req.body);
-    res.status(200).send(result);
+    successResponse(res, 200, result.message);
   } catch (error) {
-    res.status(400).send({ error: error.message });
+    console.error("Error in forgotPassword:", error);
+    errorResponse(res, 400, error.message || "Failed to send OTP");
   }
 };
 
 exports.resetPassword = async (req, res) => {
   try {
     const result = await authService.resetPassword(req.body);
-    res.status(200).send(result);
+    successResponse(res, 200, result.message);
   } catch (error) {
-    res.status(400).send({ error: error.message });
+    console.error("Error in resetPassword:", error);
+    errorResponse(res, 400, error.message || "Failed to reset password");
   }
 };

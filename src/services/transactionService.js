@@ -80,7 +80,7 @@ async function updateTransaction(transactionId, newProgress, userId) {
     };
   } catch (error) {
     console.error("Error updating transaction:", error);
-    throw error; 
+    throw error;
   }
 }
 

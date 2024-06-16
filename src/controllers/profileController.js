@@ -1,17 +1,17 @@
 const profileService = require("../services/profileService");
+const { successResponse, errorResponse } = require("../utils/responseUtils");
 
 exports.getUserProfile = async (req, res) => {
   try {
     const profile = await profileService.getUserProfile(req.user.id);
-    res.status(200).json(profile);
+    successResponse(res, 200, "User profile retrieved successfully", profile);
   } catch (error) {
     if (error.message === "User not found") {
-      return res.status(404).json({ error: error.message });
+      errorResponse(res, 404, error.message);
     } else if (error.message === "Permission denied to access user data") {
-      return res.status(403).json({ error: error.message });
+      errorResponse(res, 403, error.message);
     } else {
-      console.error("Error in getUserProfile:", error);
-      return res.status(500).json({ error: "Failed to get user profile" });
+      errorResponse(res, 500, "Failed to get user profile");
     }
   }
 };
@@ -27,20 +27,19 @@ exports.updateUserProfile = async (req, res) => {
       profileData,
       profileImage
     );
-    res.status(200).json(profile);
+    successResponse(res, 200, "User profile updated successfully", profile);
   } catch (error) {
+    console.error("Error in updateUserProfile:", error);
     if (error.message === "User not found") {
-      return res.status(404).json({ error: error.message });
-    } else if (
-      error.message === "Invalid fields for user role" ||
-      error.message === "Invalid fields for expert role"
-    ) {
-      return res.status(400).json({ error: error.message });
+      errorResponse(res, 404, error.message);
+    } else if (error.message.startsWith("Invalid fields for")) {
+      errorResponse(res, 400, error.message);
     } else if (error.message === "Username is already taken") {
-      return res.status(409).json({ error: error.message });
+      errorResponse(res, 409, error.message);
+    } else if (error.message === "Failed to upload image to storage") {
+      errorResponse(res, 500, error.message); // Tangani error unggah gambar
     } else {
-      console.error("Error updating profile:", error);
-      return res.status(500).json({ error: "Internal server error" });
+      errorResponse(res, 500, "Failed to update profile");
     }
   }
 };

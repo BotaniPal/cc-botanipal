@@ -1,4 +1,5 @@
 const transactionService = require('../services/transactionService');
+const { successResponse, errorResponse } = require("../utils/responseUtils");
 
 const createTransaction = async (req, res) => {
   try {
@@ -25,10 +26,10 @@ const createTransaction = async (req, res) => {
     };
 
     const newTransaction = await transactionService.createTransaction(transactionData);
-    res.json(newTransaction);
+    successResponse(res, 201, 'Transaction created successfully', newTransaction);
   } catch (error) {
     console.error('Error creating transaction:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    errorResponse(res, 500, error.message || 'Internal server error');
   }
 };
 
@@ -36,10 +37,10 @@ const getTransactionsByUser = async (req, res) => {
   try {
     const userId = req.user.id;
     const transactions = await transactionService.getTransactionsByUser(userId);
-    res.json(transactions);
+    successResponse(res, 200, 'Transactions retrieved successfully', transactions);
   } catch (error) {
     console.error('Error getting transactions:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    errorResponse(res, 500, 'Failed to get transactions for user');
   }
 };
 
@@ -48,15 +49,15 @@ const getTransactionById = async (req, res) => {
     const userId = req.user.id;
     const transactionId = req.params.transactionid;
     const transaction = await transactionService.getTransactionById(transactionId, userId);
-    res.json(transaction);
+    successResponse(res, 200, 'Transaction retrieved successfully', transaction); // Menggunakan successResponse
   } catch (error) {
     if (error.message === 'Transaction not found') {
-      return res.status(404).json({ error: error.message });
+      errorResponse(res, 404, error.message);
     } else if (error.message === 'Unauthorized access to transaction') {
-      return res.status(403).json({ error: error.message });
+      errorResponse(res, 403, error.message);
     } else {
-      console.error('Error getting transaction:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+      console.error('Error getting transaction:', error); 
+      errorResponse(res, 500, 'Internal server error');
     }
   }
 };
@@ -83,15 +84,15 @@ const updateTransactionProgress = async (req, res) => {
     }
 
     const updatedTransaction = await transactionService.updateTransaction(transactionId, newProgress, userId); 
-    res.json(updatedTransaction);
+    successResponse(res, 200, 'Transaction updated successfully', updatedTransaction); // Menggunakan successResponse
   } catch (error) {
     if (error.message === 'Transaction not found') {
-      return res.status(404).json({ error: error.message });
+      errorResponse(res, 404, error.message);
     } else if (error.message === 'Unauthorized to update transaction') {
-      return res.status(403).json({ error: error.message });
+      errorResponse(res, 403, error.message);
     } else {
       console.error('Error updating transaction:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+      errorResponse(res, 500, 'Internal server error');
     }
   }
 };

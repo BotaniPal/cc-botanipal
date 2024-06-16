@@ -41,21 +41,30 @@ async function uploadImageToStorage(file, userId, folderName) {
   }
 }
 
-async function predictPlantOrDisease(imageFile, userId, modelEndpoint, predictionType) {
+async function predictPlantOrDisease(
+  imageFile,
+  userId,
+  modelEndpoint,
+  predictionType
+) {
   let imageUrl;
   try {
-    imageUrl = await uploadImageToStorage(imageFile, userId, 'predictions'); 
+    imageUrl = await uploadImageToStorage(imageFile, userId, "predictions");
 
-    const response = await axios.post(modelEndpoint, { file_url: imageUrl }, {
-      headers: {
-        'Content-Type': 'application/json'
+    const response = await axios.post(
+      modelEndpoint,
+      { file_url: imageUrl },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
-    });
+    );
 
-    console.log('Response from model:', response.data);
+    console.log("Response from model:", response.data);
 
-    if (!response.data || typeof response.data.prediction !== 'string') { 
-      throw new Error('Invalid prediction response from model');
+    if (!response.data || typeof response.data.prediction !== "string") {
+      throw new Error("Invalid prediction response from model");
     }
 
     const prediction = response.data.prediction;
@@ -65,10 +74,12 @@ async function predictPlantOrDisease(imageFile, userId, modelEndpoint, predictio
       imageUrl,
       prediction,
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      predictionType
+      predictionType,
     };
 
-    const predictionRef = await db.collection('predictions').add(predictionData);
+    const predictionRef = await db
+      .collection("predictions")
+      .add(predictionData);
 
     return {
       predictionId: predictionRef.id,
@@ -80,51 +91,57 @@ async function predictPlantOrDisease(imageFile, userId, modelEndpoint, predictio
 
     if (imageUrl) {
       try {
-        const filePath = imageUrl.replace(`https://storage.googleapis.com/${bucket.name}/`, '');
+        const filePath = imageUrl.replace(
+          `https://storage.googleapis.com/${bucket.name}/`,
+          ""
+        );
         await bucket.file(filePath).delete();
-        console.log('Image deleted due to prediction error:', imageUrl);
+        console.log("Image deleted due to prediction error:", imageUrl);
       } catch (deleteError) {
-        console.error('Error deleting image:', deleteError);
+        console.error("Error deleting image:", deleteError);
       }
     }
 
     throw new Error(`Failed to predict ${predictionType}`);
   }
 }
+
 async function deleteExpiredPredictions() {
-  const oneHourAgo = Date.now() - 60 * 60 * 1000; // 1 jam yang lalu
+  const oneHourAgo = Date.now() - 60 * 60 * 1000;
 
   try {
-    // Query prediksi yang lebih dari 1 jam dan belum di-bookmark
-    const predictionsRef = db.collection('predictions');
+    const predictionsRef = db.collection("predictions");
     const expiredPredictions = await predictionsRef
-      .where('timestamp', '<', new admin.firestore.Timestamp(oneHourAgo / 1000, 0))
+      .where(
+        "timestamp",
+        "<",
+        new admin.firestore.Timestamp(oneHourAgo / 1000, 0)
+      )
       .get();
 
-    // Hapus gambar dan prediksi yang tidak di-bookmark
     const promises = expiredPredictions.docs.map(async (doc) => {
       const predictionData = doc.data();
       const imageUrl = predictionData.imageUrl;
 
-      // Hapus gambar dari Firebase Storage
       if (imageUrl) {
-        const filePath = imageUrl.replace(`https://storage.googleapis.com/${bucket.name}/`, '');
+        const filePath = imageUrl.replace(
+          `https://storage.googleapis.com/${bucket.name}/`,
+          ""
+        );
         await bucket.file(filePath).delete();
-        console.log('Deleted expired image:', imageUrl);
+        console.log("Deleted expired image:", imageUrl);
       }
 
-      // Hapus prediksi dari Firestore
       await doc.ref.delete();
-      console.log('Deleted expired prediction:', doc.id);
+      console.log("Deleted expired prediction:", doc.id);
     });
 
     await Promise.all(promises);
-    console.log('Expired predictions cleanup completed');
+    console.log("Expired predictions cleanup completed");
   } catch (error) {
-    console.error('Error deleting expired predictions:', error);
+    console.error("Error deleting expired predictions:", error);
   }
 }
-
 
 module.exports = {
   predictPlant: (imageFile, userId) =>
@@ -141,5 +158,5 @@ module.exports = {
       process.env.DISEASE_MODEL_URL,
       "disease"
     ),
-    deleteExpiredPredictions,
+  deleteExpiredPredictions,
 };

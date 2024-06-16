@@ -1,15 +1,21 @@
-const predictService = require('../services/predictService');
-const bookmarkService = require('../services/bookmarkService');
+const predictService = require("../services/predictService");
+const bookmarkService = require("../services/bookmarkService");
+const { successResponse, errorResponse } = require("../utils/responseUtils");
 
 exports.createBookmark = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { prediction, imageUrl, predictionType } = req.body; 
+    const { prediction, imageUrl, predictionType } = req.body;
 
-    const bookmark = await bookmarkService.createBookmark(userId, prediction, imageUrl, predictionType);
-    res.status(201).json(bookmark);
+    const bookmark = await bookmarkService.createBookmark(
+      userId,
+      prediction,
+      imageUrl,
+      predictionType
+    );
+    successResponse(res, 201, "Bookmark created successfully", bookmark);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    errorResponse(res, 500, error.message || "Failed to create bookmark");
   }
 };
 
@@ -19,15 +25,15 @@ exports.deleteBookmark = async (req, res) => {
     const bookmarkId = req.params.bookmarkId;
 
     await bookmarkService.deleteBookmark(bookmarkId, userId);
-    res.status(204).send();
+    successResponse(res, 204, "Bookmark deleted successfully");
   } catch (error) {
-    if (error.message === 'Bookmark not found') {
-      return res.status(404).json({ error: error.message });
-    } else if (error.message === 'Unauthorized to delete bookmark') {
-      return res.status(403).json({ error: error.message });
+    if (error.message === "Bookmark not found") {
+      errorResponse(res, 404, error.message);
+    } else if (error.message === "Unauthorized to delete bookmark") {
+      errorResponse(res, 403, error.message);
     } else {
-      console.error('Error deleting bookmark:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+      console.error("Error deleting bookmark:", error);
+      errorResponse(res, 500, "Failed to delete bookmark");
     }
   }
 };
@@ -36,8 +42,14 @@ exports.getUserBookmarks = async (req, res) => {
   try {
     const userId = req.user.id;
     const bookmarks = await bookmarkService.getUserBookmarks(userId);
-    res.status(200).json(bookmarks);
+    successResponse(
+      res,
+      200,
+      "User bookmarks retrieved successfully",
+      bookmarks
+    );
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error getting user bookmarks:", error);
+    errorResponse(res, 500, "Failed to get user bookmarks");
   }
 };
