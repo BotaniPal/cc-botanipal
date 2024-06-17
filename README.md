@@ -2,7 +2,7 @@
 
 ## **API Documentation:**
 
-https://drive.google.com/file/d/1LnPrKv__cvMFy4qdeIRNxxce7iX62NJ5/view?usp=sharing
+https://drive.google.com/file/d/1L2nb_CH2s2DgBIjgQ_LgU-ll6j0L9naw/view?usp=sharing
 
 ## **Pre-Requisite**
 
