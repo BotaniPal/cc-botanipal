@@ -2,7 +2,9 @@ const admin = require("firebase-admin");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
+const nodemailer = require("nodemailer");
 const secret = process.env.JWT_SECRET;
+const db = admin.firestore();
 
 const validateUsernameAndEmail = async (username, email) => {
   if (!username || !email) {
@@ -224,10 +226,12 @@ async function forgotPassword({ email }) {
     });
 
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
+        pass: process.env.EMAIL_PASSWORD,
       },
     });
 
@@ -255,8 +259,19 @@ async function forgotPassword({ email }) {
 
 async function deleteExpiredOTPs() {
   const now = admin.firestore.Timestamp.now();
-  const expiredOTPs = await admin.firestore().collection('passwordResets').where('expiresAt', '<', now).get();
-  
+  const expiredOTPs = await admin
+    .firestore()
+    .collection("passwordResets")
+    .where("expiresAt", "<", now)
+    .get();
+
+  const batch = db.batch();
+  expiredOTPs.forEach((doc) => {
+    batch.delete(doc.ref);
+  });
+  await batch.commit();
+
+  console.log(`Deleted ${expiredOTPs.size} expired OTPs.`);
 }
 setInterval(deleteExpiredOTPs, 5 * 60 * 1000);
 
