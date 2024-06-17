@@ -32,7 +32,7 @@ You need to prepare the environment first:
     EMAIL_USER=
     EMAIL_PASSWORD=
 
-You can ask the repository owner for model credentials*
+You can ask the repository owner for the credentials*
 
 Now you are ready and you can run: 
 
