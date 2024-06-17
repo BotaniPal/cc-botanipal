@@ -1,7 +1,7 @@
 ## Getting Started
 
-# 1.  Install Needed Tools and Dependencies
-```
+1. # Install Needed Tools and Dependencies
+
 npm install --save-dev typescript @types/react @types/node
 npx tsc --init
 npm install -D tailwindcss postcss autoprefixer
@@ -12,18 +12,13 @@ npm install react-icons
 yarn add react-icons
 npm install @tailwindcss/forms
 yarn add @tailwindcss/forms
-```
 
-# 2.  Start your Website with the commands below
-```
+2. # Start your Website with the commands below
+
 npm run dev
-```
-or
-```
+# or
 yarn dev
-```
-or
-```
+# or
 pnpm dev
 ```
 

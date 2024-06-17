@@ -63,7 +63,7 @@ const Home = () => {
               </span>
             </h2>
             <p className="text-base md:text-lg text-gray-700 mb-6">
-              BotaniPal makes it easy for you to take the next steps in caring for your plants. Our platform connects you with Botany’s experts and offers a one-stop solution for all your sustainability needs. Whether it's detecting plant types and their information, preventing and treating plant diseases, looking at plant price trends, or just discussing with others to find various solutions to problems, we've got you covered.
+              BotaniPal makes it easy for you to take the next steps in caring for your plants. Our platform connects you with Botany&apos;s experts and offers a one-stop solution for all your sustainability needs. Whether it&apos;s detecting plant types and their information, preventing and treating plant diseases, looking at plant price trends, or just discussing with others to find various solutions to problems, we&apos;ve got you covered.
             </p>
           </div>
         </div>
@@ -133,8 +133,8 @@ const Home = () => {
       </div>
 
       <div className="flex flex-col items-center w-full px-4 md:px-8 py-20 bg-gray-100">
-        <div className="flex flex-col md:flex-row w-full max-w-5xl" data-aos="fade-right">
-          <div className="w-full md:w-1/2 pr-0 md:pr-4">
+        <div className="flex flex-col md:flex-row w-full max-w-5xl" data-aos="fade-left" data-aos-delay="200">
+          <div className="w-full md:w-1/2 pr-0 md:pr-4" data-aos="fade-left" data-aos-delay="500">
             <Image
               src="/images/phone1.png"
               alt="Plant Disease Detection"
@@ -143,20 +143,20 @@ const Home = () => {
               className="rounded-lg shadow-md"
             />
           </div>
-          <div className="w-full md:w-1/2 pl-0 md:pl-4 flex flex-col justify-center">
+          <div className="w-full md:w-1/2 pl-0 md:pl-4 flex flex-col justify-center" data-aos="fade-left" data-aos-delay="1000">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Plant Type Detection 📷</h2>
-            <p className="text-base md:text-lg text-gray-700 mb-6">Know what's growing! BotaniPal's built-in identifier uses your camera to instantly recognize plants, helping you care for them perfectly.</p>
+            <p className="text-base md:text-lg text-gray-700 mb-6">Know what&apos;s growing! BotaniPal&apos;s built-in identifier uses your camera to instantly recognize plants, helping you care for them perfectly.</p>
           </div>
         </div>
       </div>
 
       <div className="flex flex-col items-center w-full px-4 md:px-8 py-20 bg-gray-200">
-        <div className="flex flex-col md:flex-row w-full max-w-5xl" data-aos="fade-right">
-          <div className="w-full md:w-1/2 pr-0 md:pr-4 flex flex-col justify-center">
+        <div className="flex flex-col md:flex-row w-full max-w-5xl" data-aos="fade-right" data-aos-delay="200">
+          <div className="w-full md:w-1/2 pr-0 md:pr-4 flex flex-col justify-center" data-aos="fade-right" data-aos-delay="500">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Plant Disease Detection 💀</h2>
-            <p className="text-base md:text-lg text-gray-700 mb-6">Spot diseases early with BotaniPal's Disease Detection. Take a picture and get treatment recommendations to keep your greenery healthy.</p>
+            <p className="text-base md:text-lg text-gray-700 mb-6">Spot diseases early with BotaniPal&apos;s Disease Detection. Take a picture and get treatment recommendations to keep your greenery healthy.</p>
           </div>
-          <div className="w-full md:w-1/2 px-0 md:px-16 ml-0 md:ml-9">
+          <div className="w-full md:w-1/2 px-0 md:px-16 ml-0 md:ml-9" data-aos="fade-right" data-aos-delay="1000">
             <Image
               src="/images/phone2.png"
               alt="Plant Disease Detection"
@@ -169,8 +169,8 @@ const Home = () => {
       </div>
 
       <div className="flex flex-col items-center w-full px-4 md:px-8 py-20 bg-gray-100">
-        <div className="flex flex-col md:flex-row w-full max-w-5xl" data-aos="fade-right">
-          <div className="w-full md:w-1/2 pr-0 md:pr-4">
+        <div className="flex flex-col md:flex-row w-full max-w-5xl" data-aos="fade-left" data-aos-delay="200">
+          <div className="w-full md:w-1/2 pr-0 md:pr-4" data-aos="fade-left" data-aos-delay="500">
             <Image
               src="/images/phone3.png"
               alt="Plant Disease Detection"
@@ -179,7 +179,7 @@ const Home = () => {
               className="rounded-lg shadow-md"
             />
           </div>
-          <div className="w-full md:w-1/2 pl-0 md:pl-4 flex flex-col justify-center">
+          <div className="w-full md:w-1/2 pl-0 md:pl-4 flex flex-col justify-center" data-aos="fade-left" data-aos-delay="1000">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Consultation with The Experts 👩🏻‍🎓</h2>
             <p className="text-base md:text-lg text-gray-700 mb-6">Stuck with a tricky plant problem? BotaniPal connects you with gardening gurus! Get personalized advice from real experts for a flourishing garden.</p>
           </div>
@@ -187,12 +187,12 @@ const Home = () => {
       </div>
 
       <div className="flex flex-col items-center w-full px-4 md:px-8 py-20 bg-gray-200">
-        <div className="flex flex-col md:flex-row w-full max-w-5xl" data-aos="fade-right">
-          <div className="w-full md:w-1/2 pr-0 md:pr-4 flex flex-col justify-center">
+        <div className="flex flex-col md:flex-row w-full max-w-5xl" data-aos="fade-right" data-aos-delay="200">
+          <div className="w-full md:w-1/2 pr-0 md:pr-4 flex flex-col justify-center" data-aos="fade-right" data-aos-delay="500">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Find Planting Solutions on Forums 💬</h2>
-            <p className="text-base md:text-lg text-gray-700 mb-6">Stuck in a planting rut? BotaniPal's Plant Forums connect you with a community of passionate gardeners! Share problems, swap tips, and discover expert solutions together.</p>
+            <p className="text-base md:text-lg text-gray-700 mb-6">Stuck in a planting rut? BotaniPal&apos;s Plant Forums connect you with a community of passionate gardeners! Share problems, swap tips, and discover expert solutions together.</p>
           </div>
-          <div className="w-full md:w-1/2 px-0 md:px-16 ml-0 md:ml-9">
+          <div className="w-full md:w-1/2 px-0 md:px-16 ml-0 md:ml-9" data-aos="fade-right" data-aos-delay="1000">
             <Image
               src="/images/phone2.png"
               alt="Plant Disease Detection"
@@ -214,7 +214,7 @@ const Home = () => {
         />
         <div className="absolute inset-0 bg-black bg-opacity-0 flex flex-col items-center justify-center text-center px-4">
           <div className="flex flex-col md:flex-row w-full max-w-5xl" data-aos="fade-right">
-            <div className="w-full md:w-1/2 px-6">
+            <div className="w-full md:w-1/2 px-6 pb-3 md:pb-0">
               <Image
                 src="/images/forest.jpg"
                 alt="Plant Disease Detection"
@@ -224,10 +224,10 @@ const Home = () => {
               />
             </div>
             <div className="w-full md:w-1/2 pl-4 flex flex-col justify-center">
-              <h2 className="text-2xl md:text-4xl font-bold text-white mb-4">
+              <h2 className="text-2xl md:text-4xl font-bold text-white mb-4 md:pb-0 pb-20">
                 Increase Your Knowledge About Your Plants Now 👊
               </h2>
-              <p className="text-sm md:text-lg text-white mb-6">Try BotaniPal to grow, take care, and sell your commodity to the market!</p>
+              <p className="hidden md:block text-lg text-white mb-6">Try BotaniPal to grow, take care, and sell your commodity to the market!</p>
             </div>
           </div>
         </div>
