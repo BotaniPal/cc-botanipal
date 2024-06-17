@@ -29,6 +29,8 @@ You need to prepare the environment first:
     PLANT_MODEL_URL=
     DISEASE_MODEL_URL=
     FORECAST_MODEL_URL=
+    EMAIL_USER=
+    EMAIL_PASSWORD=
 
 You can ask the repository owner for model credentials*
 

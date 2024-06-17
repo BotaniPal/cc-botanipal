@@ -190,147 +190,154 @@ const login = async ({ username, password }) => {
   return { token, user };
 };
 
-const forgotPassword = async ({ email }) => {
+async function forgotPassword({ email }) {
   if (!email) {
     throw new Error("Email must be provided");
   }
 
-  const userQuery = await admin
-    .firestore()
-    .collection("users")
-    .where("email", "==", email)
-    .get();
+  const usersRef = db.collection("users");
+  const expertsRef = db.collection("experts");
+  const passwordResetsRef = db.collection("passwordResets");
 
-  if (userQuery.empty) {
-    const expertQuery = await admin
-      .firestore()
-      .collection("experts")
-      .where("email", "==", email)
-      .get();
+  let userDoc = null;
+  try {
+    const userSnapshot = await usersRef.where("email", "==", email).get();
+    const expertSnapshot = await expertsRef.where("email", "==", email).get();
 
-    if (expertQuery.empty) {
+    let userDoc;
+    if (!userSnapshot.empty) {
+      userDoc = userSnapshot.docs[0];
+    } else if (!expertSnapshot.empty) {
+      userDoc = expertSnapshot.docs[0];
+    } else {
       throw new Error("User not found");
     }
 
-    const expertDoc = expertQuery.docs[0];
-    const expert = expertDoc.data();
-
+    const user = userDoc.data();
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-    await admin.firestore().collection("passwordResets").doc(expertDoc.id).set({
+    await passwordResetsRef.doc(userDoc.id).set({
       otp,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
     });
 
-    console.log(`OTP for expert ${expert.email}: ${otp}`);
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+    });
 
-    return { message: "OTP sent to email" };
+    const mailOptions = {
+      from: "Botanipal Service",
+      to: email,
+      subject: "Reset Password OTP",
+      text: `Kode OTP Anda untuk reset password adalah: ${otp}. Kode ini akan kadaluarsa dalam 5 menit.`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`OTP sent to ${email}: ${otp}`);
+
+    return { message: "OTP sent to email", otp };
+  } catch (error) {
+    console.error("Error in forgotPassword:", error);
+
+    if (userDoc) {
+      await passwordResetsRef.doc(userDoc.id).delete();
+    }
+
+    throw new Error("Failed to send OTP. Please try again later.");
   }
+}
 
-  const userDoc = userQuery.docs[0];
-  const user = userDoc.data();
+async function deleteExpiredOTPs() {
+  const now = admin.firestore.Timestamp.now();
+  const expiredOTPs = await admin.firestore().collection('passwordResets').where('expiresAt', '<', now).get();
+  
+}
+setInterval(deleteExpiredOTPs, 5 * 60 * 1000);
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-  await admin.firestore().collection("passwordResets").doc(userDoc.id).set({
-    otp,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-
-  console.log(`OTP for user ${user.email}: ${otp}`);
-
-  return { message: "OTP sent to email" };
-};
-
-const resetPassword = async ({
+async function resetPassword({
   username,
   otp,
   newPassword,
   newConfirmPassword,
-}) => {
+}) {
+  if (!username || !otp || !newPassword || !newConfirmPassword) {
+    throw new Error("Username, OTP, and new password must be provided");
+  }
+
   if (newPassword !== newConfirmPassword) {
     throw new Error("Passwords do not match");
   }
 
-  const userQuery = await admin
-    .firestore()
-    .collection("users")
-    .where("username", "==", username)
-    .get();
+  const passwordResetsRef = db.collection("passwordResets");
+  const usersRef = db.collection("users");
+  const expertsRef = db.collection("experts");
+  const sessionsRef = db.collection("sessions");
 
-  if (userQuery.empty) {
-    const expertQuery = await admin
-      .firestore()
-      .collection("experts")
+  try {
+    const userSnapshot = await usersRef.where("username", "==", username).get();
+    const expertSnapshot = await expertsRef
       .where("username", "==", username)
       .get();
 
-    if (expertQuery.empty) {
+    let userDoc = null;
+    if (!userSnapshot.empty) {
+      userDoc = userSnapshot.docs[0];
+    } else if (!expertSnapshot.empty) {
+      userDoc = expertSnapshot.docs[0];
+    } else {
       throw new Error("User not found");
     }
 
-    const expertDoc = expertQuery.docs[0];
-    const expert = expertDoc.data();
+    const passwordResetRef = passwordResetsRef.doc(userDoc.id);
+    const passwordResetDoc = await passwordResetRef.get();
 
-    const resetDoc = await admin
-      .firestore()
-      .collection("passwordResets")
-      .doc(expertDoc.id)
-      .get();
+    if (!passwordResetDoc.exists) {
+      throw new Error("Invalid or expired OTP");
+    }
 
-    if (!resetDoc.exists || resetDoc.data().otp !== otp) {
+    const resetData = passwordResetDoc.data();
+    if (resetData.otp !== otp) {
+      throw new Error("Invalid or expired OTP");
+    }
+
+    const now = admin.firestore.Timestamp.now();
+    if (resetData.expiresAt < now) {
+      await passwordResetRef.delete();
       throw new Error("Invalid or expired OTP");
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    await admin.auth().updateUser(expertDoc.id, {
-      password: hashedPassword,
-    });
+    await admin.auth().updateUser(userDoc.id, { password: hashedPassword });
 
-    await admin.firestore().collection("experts").doc(expertDoc.id).update({
-      password: hashedPassword,
-    });
-
+    const collectionName = userDoc.data().role === "user" ? "users" : "experts";
     await admin
       .firestore()
-      .collection("passwordResets")
-      .doc(expertDoc.id)
-      .delete();
-    await admin.firestore().collection("sessions").doc(expertDoc.id).delete();
+      .collection(collectionName)
+      .doc(userDoc.id)
+      .update({ password: hashedPassword });
+
+    await passwordResetRef.delete();
+
+    await sessionsRef.doc(userDoc.id).delete();
 
     return { message: "Password reset successfully. Please login again." };
+  } catch (error) {
+    console.error("Error in resetPassword:", error);
+    if (
+      error.message !== "Invalid or expired OTP" &&
+      error.message !== "User not found"
+    ) {
+      throw error;
+    }
   }
-
-  const userDoc = userQuery.docs[0];
-  const user = userDoc.data();
-
-  const resetDoc = await admin
-    .firestore()
-    .collection("passwordResets")
-    .doc(userDoc.id)
-    .get();
-
-  if (!resetDoc.exists || resetDoc.data().otp !== otp) {
-    throw new Error("Invalid or expired OTP");
-  }
-
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-  await admin.auth().updateUser(userDoc.id, {
-    password: hashedPassword,
-  });
-
-  await admin.firestore().collection("users").doc(userDoc.id).update({
-    password: hashedPassword,
-  });
-
-  await admin.firestore().collection("passwordResets").doc(userDoc.id).delete();
-  await admin.firestore().collection("sessions").doc(userDoc.id).delete();
-
-  return { message: "Password reset successfully. Please login again." };
-};
-
+}
 module.exports = {
   registerUser,
   registerExpert,

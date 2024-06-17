@@ -40,7 +40,6 @@ cron.schedule('0 * * * *', () => {
   predictService.deleteExpiredPredictions();
 });
 
-
 app.use("/auth", rateLimiter, authRoutes);
 app.use("/profile", profileRoutes);
 app.use("/transactions", transactionRoutes);

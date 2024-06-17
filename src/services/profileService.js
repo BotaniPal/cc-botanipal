@@ -97,18 +97,20 @@ async function updateUserProfile(userId, profileData, profileImage) {
       profileData.username &&
       profileData.username !== existingUserData.username
     ) {
-      const usersSnapshot = await admin
-        .firestore()
+      const usersSnapshot = await db
         .collection("users")
         .where("username", "==", profileData.username)
         .get();
-      const expertsSnapshot = await admin
-        .firestore()
+      const expertsSnapshot = await db
         .collection("experts")
         .where("username", "==", profileData.username)
         .get();
 
-      if (!usersSnapshot.empty || !expertsSnapshot.docs) {
+      const isUsernameTaken =
+        usersSnapshot.docs.some((doc) => doc.id !== userId) ||
+        expertsSnapshot.docs.some((doc) => doc.id !== userId);
+
+      if (isUsernameTaken) {
         throw new Error("Username is already taken");
       }
     }

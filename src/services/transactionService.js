@@ -1,12 +1,23 @@
 const admin = require("firebase-admin");
-
 const db = admin.firestore();
 
+class TransactionError extends Error {
+  constructor(message, status) {
+    super(message);
+    this.status = status;
+  }
+}
+
 async function createTransaction(transactionData) {
-  const transactionRef = await db
-    .collection("transactions")
-    .add(transactionData);
-  return { id: transactionRef.id, ...transactionData };
+  try {
+    const transactionRef = await db.collection("transactions").add(transactionData);
+    const transactionDoc = await transactionRef.get(); 
+
+    return { id: transactionDoc.id, ...transactionDoc.data() };
+  } catch (error) {
+    console.error("Error creating transaction:", error);
+    throw new TransactionError(error.message || "Failed to create transaction", 500);
+  }
 }
 
 async function getTransactionsByUser(userId) {
